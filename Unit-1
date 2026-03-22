@@ -1,0 +1,39 @@
+import pandas as pd
+import sqlite3
+
+# Step 1: Create raw data
+raw_data = {
+    "order_id": [1, 2, 3, 4],
+    "customer": ["Alice", "Bob", "Alice", "David"],
+    "amount": ["100", "200", "150", "300"],
+    "order_date": ["2024-01-01", "2024-01-03", "2024-01-05", "2024-01-10"]
+}
+
+df = pd.DataFrame(raw_data)
+print("Raw Data:\n", df)
+
+# Step 2: Data Cleaning & Transformation
+df["amount"] = df["amount"].astype(float)
+df["order_date"] = pd.to_datetime(df["order_date"])
+
+# Add calculated fields
+df["tax"] = df["amount"] * 0.10
+df["total_amount"] = df["amount"] + df["tax"]
+
+print("\nTransformed Data:\n", df)
+
+# Step 3: Store in SQLite database
+conn = sqlite3.connect("my_database.db")
+df.to_sql("fact_orders", conn, if_exists="replace", index=False)
+
+# Step 4: Read from database
+query = "SELECT * FROM fact_orders"
+df_view = pd.read_sql(query, conn)
+
+print("\nData from Database:\n", df_view)
+
+# Close connection
+conn.close()
+
+
+
